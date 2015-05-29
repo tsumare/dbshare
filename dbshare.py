@@ -1,9 +1,17 @@
 #!/usr/bin/env python
 
 import sys, dropbox, os, json
-
 import imp
-tokens = imp.load_source('tokens', os.path.expanduser('~/.dbshare.conf'))
+
+CONF_FILE = os.path.expanduser('~/.dbshare.conf')
+try:
+	tokens = imp.load_source('tokens', CONF_FILE)
+except IOError as e:
+	f = open(CONF_FILE, 'w')
+	f.write("OAUTH_TOKEN = None")
+	f.close()
+	del f
+	tokens = imp.load_source('tokens', CONF_FILE)
 
 if tokens.OAUTH_TOKEN is None:
 	print 'Enter app key:',
@@ -12,13 +20,15 @@ if tokens.OAUTH_TOKEN is None:
 	APP_SECRET = raw_input().strip()
 
 	flow = dropbox.client.DropboxOAuth2FlowNoRedirect(APP_KEY, APP_SECRET)
-	print 'Please authorize the application at', flow.start()
+	print 'Please authorize the application at', flow.start().strip()
 	print 'Enter the token you are given:',
 	token = raw_input().strip()
 	access_token, user_id = flow.finish(token)
-	print 'Put the following line in ~/.dbshare.conf:'
-	print "OATH_TOKEN = '%s'"%(access_token,)
-	sys.exit(0)
+	print 'Updating ~/.dbshare.conf...'
+	f = open(CONF_FILE, 'w')
+	f.write("OAUTH_TOKEN = '%s'"%(access_token,))
+	f.close()
+	tokens.OAUTH_TOKEN = access_token
 
 if len(sys.argv) < 2:
 	print 'dbshare.py filename_in_dropbox'
