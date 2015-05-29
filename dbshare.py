@@ -16,7 +16,8 @@ if tokens.OAUTH_TOKEN is None:
 	print 'Enter the token you are given:',
 	token = raw_input().strip()
 	access_token, user_id = flow.finish(token)
-	print 'Put the following token in tokens.py as OATH_TOKEN:', access_token
+	print 'Put the following line in ~/.dbshare.conf:'
+	print "OATH_TOKEN = '%s'"%(access_token,)
 	sys.exit(0)
 
 if len(sys.argv) < 2:
